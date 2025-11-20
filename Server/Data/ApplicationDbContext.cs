@@ -3,13 +3,8 @@ using Server.Models;
 
 namespace Server.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
-
         public DbSet<ProductEntry> ProductEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

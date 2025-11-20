@@ -145,10 +145,11 @@ docker-compose down -v
 
 ### 🔄 Phase 2: Server-Side API (In Progress)
 
--   [ ] Create POST endpoint for receiving product entries
--   [ ] Create GET endpoint for retrieving all entries
--   [ ] Add DTOs and validation
--   [ ] Implement error handling
+-   [x] Create POST endpoint for receiving product entries
+-   [x] Create GET endpoint for retrieving all entries
+-   [x] Create GET endpoint to retieve specific entries using id
+-   [x] Add DTOs and validation
+-   [x] Implement error handling
 
 ### 📋 Phase 3: Client - Online Mode
 
