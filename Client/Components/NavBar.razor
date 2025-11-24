@@ -1,0 +1,55 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<nav class="navbar">
+    <ul class="nav-list">
+        <li>
+            <NavLink href="/" Match="NavLinkMatch.All">Home</NavLink>
+        </li>
+        <li>
+            <NavLink href="/form">Product Entry</NavLink>
+        </li>
+        <li>
+            <NavLink href="/view">Database Viewer</NavLink>
+        </li>
+    </ul>
+
+    <!-- Connection status indicator -->
+    <div class="connection-status @(IsConnected ? "online" : "offline")">
+        <span class="status-dot"></span>
+        @(IsConnected ? "Connected" : "Disconnected")
+    </div>
+</nav>
+
+@code {
+    private bool IsConnected { get; set; } = false;
+    private IJSObjectReference? jsModule;
+    private DotNetObjectReference<NavBar>? dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/connectionMonitor.js");
+            await jsModule.InvokeVoidAsync("initializeConnectionMonitor", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public void UpdateConnectionStatus(bool isOnline)
+    {
+        IsConnected = isOnline;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (jsModule != null)
+        {
+            await jsModule.InvokeVoidAsync("cleanupConnectionMonitor");
+            await jsModule.DisposeAsync();
+        }
+        dotNetRef?.Dispose();
+    }
+}

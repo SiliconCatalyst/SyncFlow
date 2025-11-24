@@ -1,0 +1,4 @@
+/* Imports all CSS related to individual components, used as a <Link> in index.html */
+
+@import url("components/NavBar.css");
+@import url("components/EntryForm.css");

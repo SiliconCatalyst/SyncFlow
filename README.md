@@ -134,29 +134,30 @@ docker-compose down -v
 
 ## 📝 Development Progress
 
-### ✅ Phase 1: Database & Models (Completed)
-
--   [x] Created ProductEntry data model
--   [x] Configured Entity Framework Core with SQL Server
--   [x] Set up dual database configuration (LocalDB + Docker)
--   [x] Created and applied database migrations
--   [x] Configured separate ports for Dev (5000/5001) and Prod (6000/6001)
--   [x] Added database connection health check endpoint
-
-### 🔄 Phase 2: Server-Side API (In Progress)
-
--   [x] Create POST endpoint for receiving product entries
--   [x] Create GET endpoint for retrieving all entries
--   [x] Create GET endpoint to retieve specific entries using id
--   [x] Add DTOs and validation
--   [x] Implement error handling
-
-### 📋 Phase 3: Client - Online Mode
+### 📋 Phase 1: Client - Online Mode
 
 -   [ ] Build data entry form component
 -   [ ] Implement auto-capture datetime
--   [ ] Connect form to Server API
+-   [ ] Add Page Entry Form and Database Viewer pages
+-   [ ] Add connection status indicator
 -   [ ] Add product entry loop functionality
+
+### ✅ Phase 2: Database & Models
+
+-   [ ] Created ProductEntry data model
+-   [ ] Configured Entity Framework Core with SQL Server
+-   [ ] Set up dual database configuration (LocalDB + Docker)
+-   [ ] Created and applied database migrations
+-   [ ] Configured separate ports for Dev (5000/5001) and Prod (6000/6001)
+-   [ ] Added database connection health check endpoint
+
+### 🔄 Phase 3: Server-Side API
+
+-   [ ] Create POST endpoint for receiving product entries
+-   [ ] Create GET endpoint for retrieving all entries
+-   [ ] Create GET endpoint to retieve specific entries using id
+-   [ ] Add DTOs and validation
+-   [ ] Implement error handling
 
 ### 🔌 Phase 4: Offline Capability
 
@@ -171,9 +172,8 @@ docker-compose down -v
 -   [ ] Display all collected entries
 -   [ ] Add filtering/search functionality
 
-### 🎨 Phase 6: Polish & Testing
+### 🎨 Phase 6: Polish & Last Touches
 
--   [ ] Comprehensive testing
 -   [ ] UI improvements
 -   [ ] Mobile responsiveness
 -   [ ] Documentation
