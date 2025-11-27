@@ -1,5 +1,28 @@
 ﻿@page "/"
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
-<h1>Welcome to SyncFlow</h1>
+<div class="section-container markdown-body">@((MarkupString)HtmlContent)</div>
+
+@code {
+    private string HtmlContent = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var md = await Http.GetStringAsync("README.md");
+
+            var pipeline = new Markdig.MarkdownPipelineBuilder()
+            .UsePipeTables()
+            .Build();
+
+            HtmlContent = Markdig.Markdown.ToHtml(md, pipeline);
+        }
+        catch (Exception ex)
+        {
+            HtmlContent = $"<p>Error: {ex.Message}</p>";
+        }
+    }
+}

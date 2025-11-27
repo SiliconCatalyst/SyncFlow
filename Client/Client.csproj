@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.31.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.9" PrivateAssets="all" />
+
   </ItemGroup>
 
+  <Target Name="CopyReadme" BeforeTargets="BeforeBuild">
+    <Copy SourceFiles="..\README.md" DestinationFiles="wwwroot\README.md" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
