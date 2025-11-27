@@ -71,21 +71,20 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("http://localhost:5188/api/productentries", entry);
+            var success = await ProductService.CreateAsync(entry);
 
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
                 message = "Entry added successfully!";
                 isError = false;
                 ResetForm();
 
-                // Optional: Navigate to view page after 2 seconds
-                await Task.Delay(2000);
+                await Task.Delay(1500);
                 Navigation.NavigateTo("/view");
             }
             else
             {
-                message = $"Error: {response.StatusCode}";
+                message = "Failed to add entry";
                 isError = true;
             }
         }

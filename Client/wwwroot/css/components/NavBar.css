@@ -25,22 +25,40 @@
 		color: #5a0fad;
 	}
 
-	.connection-status {
+	.status-indicators {
 		position: absolute;
 		right: 1rem;
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.queue-indicator,
+	.syncing-indicator,
+	.connection-status {
 		font-size: small;
 		font-weight: bolder;
 		padding: 0.25rem 0.5rem;
 		border-radius: 0.25rem;
+		display: flex;
+		align-items: center;
 		gap: 0.5rem;
+	}
 
-		.status-dot {
-			width: 0.5rem;
-			height: 0.5rem;
-			border-radius: 50%;
-			display: inline-block;
-			flex-shrink: 0;
-		}
+	.queue-indicator {
+		background: #e7f3ff;
+		color: #1565c0;
+	}
+
+	.syncing-indicator {
+		background: #f5f5f5;
+		color: #666;
+		transition: all 0.3s ease;
+	}
+
+	.syncing-indicator.active {
+		background: #d1ecf1;
+		color: #0c5460;
 	}
 
 	/* Online */
@@ -60,6 +78,42 @@
 
 		.status-dot {
 			background-color: #721c24;
+		}
+	}
+
+	.status-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		display: inline-block;
+		flex-shrink: 0;
+	}
+
+	.online .status-dot {
+		background: #28a745;
+		box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+	}
+
+	.offline .status-dot {
+		background: #dc3545;
+		box-shadow: 0 0 8px rgba(220, 53, 69, 0.6);
+	}
+
+	.sync-spinner {
+		font-size: 1rem;
+		display: inline-block;
+	}
+
+	.syncing-indicator.active .sync-spinner {
+		animation: rotate 1s linear infinite;
+	}
+
+	@keyframes rotate {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
 		}
 	}
 }

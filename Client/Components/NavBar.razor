@@ -1,5 +1,5 @@
+@inject SyncQueueService SyncQueue
 @implements IAsyncDisposable
-@inject IJSRuntime JS
 
 <nav class="navbar">
     <ul class="nav-list">
@@ -14,25 +14,62 @@
         </li>
     </ul>
 
-    <!-- Connection status indicator -->
-    <div class="connection-status @(IsConnected ? "online" : "offline")">
-        <span class="status-dot"></span>
-        @(IsConnected ? "Connected" : "Disconnected")
+    <div class="status-indicators">
+
+        <!-- Syncing indicator - always visible -->
+        <div class="syncing-indicator @(IsSyncing ? "active" : "")">
+            <span>@(IsSyncing ? "Syncing" : "Not Syncing")</span>
+        </div>
+
+        <!-- Queue indicator - always visible -->
+        <div class="queue-indicator">
+            <span class="queue-count">Queue: @QueueCount</span>
+        </div>
+
+        <!-- Connection status indicator -->
+        <div class="connection-status @(IsConnected ? "online" : "offline")">
+            <span class="status-dot"></span>
+            @(IsConnected ? "Connected" : "Disconnected")
+        </div>
     </div>
 </nav>
 
 @code {
-    private bool IsConnected { get; set; } = false;
+    private bool IsConnected { get; set; } = true;
+    private bool IsSyncing { get; set; } = false;
+    private int QueueCount { get; set; } = 0;
     private IJSObjectReference? jsModule;
     private DotNetObjectReference<NavBar>? dotNetRef;
+    private System.Threading.Timer? queueCheckTimer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            dotNetRef = DotNetObjectReference.Create(this);
-            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/connectionMonitor.js");
-            await jsModule.InvokeVoidAsync("initializeConnectionMonitor", dotNetRef);
+            try
+            {
+                // Subscribe to reconnection event
+                ConnectionStatus.OnReconnected += HandleReconnection;
+
+                dotNetRef = DotNetObjectReference.Create(this);
+                jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/connectionMonitor.js");
+                await jsModule.InvokeVoidAsync("initializeConnectionMonitor", dotNetRef);
+
+                // Check queue count periodically
+                await UpdateQueueCount();
+                queueCheckTimer = new System.Threading.Timer(async _ =>
+                {
+                    await InvokeAsync(async () =>
+    {
+                    await UpdateQueueCount();
+                    StateHasChanged();
+                });
+                }, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing connection monitor: {ex.Message}");
+            }
         }
     }
 
@@ -40,15 +77,51 @@
     public void UpdateConnectionStatus(bool isOnline)
     {
         IsConnected = isOnline;
+        ConnectionStatus.UpdateStatus(isOnline);
         StateHasChanged();
+    }
+
+    private async void HandleReconnection()
+    {
+        Console.WriteLine("🔄 Reconnected! Triggering sync...");
+        IsSyncing = true;
+        StateHasChanged();
+
+        try
+        {
+            await ProductService.SyncAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Sync error: {ex.Message}");
+        }
+        finally
+        {
+            IsSyncing = false;
+            await UpdateQueueCount();
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateQueueCount()
+    {
+        var queue = await SyncQueue.GetQueueAsync();
+        QueueCount = queue.Count;
     }
 
     public async ValueTask DisposeAsync()
     {
+        ConnectionStatus.OnReconnected -= HandleReconnection;
+        queueCheckTimer?.Dispose();
+
         if (jsModule != null)
         {
-            await jsModule.InvokeVoidAsync("cleanupConnectionMonitor");
-            await jsModule.DisposeAsync();
+            try
+            {
+                await jsModule.InvokeVoidAsync("cleanupConnectionMonitor");
+                await jsModule.DisposeAsync();
+            }
+            catch { }
         }
         dotNetRef?.Dispose();
     }

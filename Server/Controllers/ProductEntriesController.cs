@@ -36,6 +36,11 @@ namespace Server.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductEntry>> PostProductEntry(ProductEntry entry)
         {
+            // CRITICAL: Always reset ID to 0 so database auto-generates it
+            // This handles offline sync where negative IDs are sent
+            entry.Id = 0;
+
+            // Set timestamps server-side
             entry.EntryDateTime = DateTime.Now;
             entry.CreatedAt = DateTime.Now;
 

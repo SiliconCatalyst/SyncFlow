@@ -1,29 +1,28 @@
 # SyncFlow - Offline-First Data Collection App
 
-A hybrid Blazor application that enables data collection on mobile, tablet, or PC with full offline capability and automatic synchronization.
+A Blazor WebAssembly application that enables seamless data collection with full offline capability and intelligent automatic synchronization.
 
 ## 🚀 Features
 
--   ✅ Works online and offline seamlessly
--   ✅ Automatic data synchronization when connection restored
--   ✅ Cross-platform (Web, Mobile, Desktop)
--   ✅ Real-time data collection and submission
--   ✅ Dual database configuration (Development & Production)
+-   ✅ **Offline-First Architecture** - Works without internet connection
+-   ✅ **Smart Sync** - Automatic synchronization when connection is restored
+-   ✅ **Real-Time Status** - Connection, queue, and sync indicators
+-   ✅ **Local Persistence** - Data saved in browser LocalStorage
+-   ✅ **Queue Management** - Offline operations queued and synced automatically
+-   ✅ **Clean UI** - Modern, responsive interface with status indicators
 
 ## 🛠️ Tech Stack
 
--   **Frontend**: Blazor WebAssembly
--   **Backend**: Blazor Server + ASP.NET Core Web API
--   **Database**: Microsoft SQL Server
+-   **Frontend**: Blazor WebAssembly (.NET 9.0)
+-   **Backend**: Blazor Server + ASP.NET Core Web API (.NET 9.0)
+-   **Database**: Microsoft SQL Server (LocalDB)
 -   **ORM**: Entity Framework Core 9.0
--   **Offline Storage**: Blazored LocalStorage
--   **Containerization**: Docker (SQL Server)
+-   **Storage**: Browser LocalStorage (via JavaScript Interop)
 
 ## 📋 Requirements
 
 -   .NET 9.0 SDK or higher
--   SQL Server (LocalDB for dev, Docker for production)
--   Docker Desktop (for production database)
+-   SQL Server LocalDB (included with Visual Studio)
 
 ## 🗄️ Database Schema
 
@@ -45,190 +44,142 @@ A hybrid Blazor application that enables data collection on mobile, tablet, or P
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/SyncFlow.git
+git clone https://github.com/SiliconCatalyst/SyncFlow.git
 cd SyncFlow
 ```
 
-### 2. Restore Dependencies
-
-```bash
-dotnet restore
-```
-
-### 3. Setup Development Database (LocalDB)
+### 2. Setup Database
 
 ```bash
 cd Server
+dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
 
-### 4. Setup Production Database (Docker)
+### 3. Run the Application
 
-```bash
-# Start Docker SQL Server
-docker-compose up -d
-
-# Apply migrations to Docker database
-dotnet ef database update --connection "Server=localhost,1433;Database=DataCollectorDB;User Id=sa;Password=placeholder;TrustServerCertificate=True;"
-```
-
-### 5. Run the Application
-
-#### Development Mode (LocalDB - Port 5000/5001)
+**Terminal 1 - Start Server:**
 
 ```bash
 cd Server
-dotnet run --launch-profile Development
+dotnet run
 ```
 
-Access at: `https://localhost:5000`
-
-#### Production Mode (Docker SQL - Port 6000/6001)
+**Terminal 2 - Start Client:**
 
 ```bash
-# Make sure Docker SQL is running
-docker-compose up -d
-
-cd Server
-dotnet run --launch-profile Production-Local
+cd Client
+dotnet run
 ```
 
-Access at: `https://localhost:6000`
+Access the application at the URL shown in the Client terminal (typically `http://localhost:5007`).
 
-## 🧪 Testing Database Connection
+## 🎯 How It Works
 
-Test endpoint available at:
+### Online Mode
 
-```
-Development: https://localhost:5000/api/test-db
-Production:  https://localhost:6000/api/test-db
-```
+1. User submits data through the form
+2. Data is sent directly to the API
+3. API stores data in SQL Server database
+4. Success confirmation shown to user
 
-Expected response:
+### Offline Mode
 
-```json
-{
-	"connected": true,
-	"message": "Database connection successful!"
-}
-```
+1. User submits data through the form
+2. Data is stored in browser LocalStorage with temporary negative ID
+3. Operation is added to sync queue
+4. Success confirmation shown (no errors!)
+5. Data remains accessible in the app
 
-## 🐳 Docker Commands
+### Reconnection
 
-```bash
-# Start SQL Server
-docker-compose up -d
+1. Connection indicator detects internet is back
+2. Automatic sync is triggered
+3. Queued operations are sent to API in order
+4. Temporary IDs are replaced with real database IDs
+5. Queue count updates to reflect synced items
 
-# Stop SQL Server
-docker-compose down
+## 📊 Status Indicators
 
-# View logs
-docker-compose logs -f sqlserver
+The navbar displays three real-time indicators:
 
-# Restart SQL Server
-docker-compose restart
+-   **Queue: X** - Number of pending operations waiting to sync (blue)
+-   **Syncing / Not Syncing** - Current sync status with animated spinner (gray/blue)
+-   **Connected / Disconnected** - Internet connection status (green/red)
 
-# Remove all data (fresh start)
-docker-compose down -v
-```
+## 🧪 Testing Offline Mode
 
-## 📝 Development Progress
+1. **Go Offline**: Stop the Server terminal (Ctrl+C)
+2. **Add Entries**: Create 2-3 product entries via the form
+3. **Verify Queue**: Check navbar shows "Queue: 3"
+4. **Go Online**: Restart the Server (`dotnet run` in Server folder)
+5. **Watch Sync**: Observe "Syncing" indicator and queue count drop to 0
+6. **Verify Data**: Check Database Viewer page - all entries should have real IDs
 
-### 📋 Phase 1: Client - Online Mode
+## 📝 Development Phases
 
--   [ ] Build data entry form component
--   [ ] Implement auto-capture datetime
--   [ ] Add Page Entry Form and Database Viewer pages
--   [ ] Add connection status indicator
--   [ ] Add product entry loop functionality
+### ✅ Phase 1: Project Setup & Database
 
-### ✅ Phase 2: Database & Models
+-   Created Blazor WASM + ASP.NET Core Web API architecture
+-   Configured Entity Framework Core with SQL Server LocalDB
+-   Created ProductEntry model and database migrations
+-   Set up API controllers with CRUD operations
 
--   [ ] Created ProductEntry data model
--   [ ] Configured Entity Framework Core with SQL Server
--   [ ] Set up dual database configuration (LocalDB + Docker)
--   [ ] Created and applied database migrations
--   [ ] Configured separate ports for Dev (5000/5001) and Prod (6000/6001)
--   [ ] Added database connection health check endpoint
+### ✅ Phase 2: Client UI
 
-### 🔄 Phase 3: Server-Side API
+-   Built product entry form with validation
+-   Created database viewer with table display
+-   Implemented navigation and routing
+-   Added README.md display with Markdown rendering
 
--   [ ] Create POST endpoint for receiving product entries
--   [ ] Create GET endpoint for retrieving all entries
--   [ ] Create GET endpoint to retieve specific entries using id
--   [ ] Add DTOs and validation
--   [ ] Implement error handling
+### ✅ Phase 3: Offline-First Architecture
 
-### 🔌 Phase 4: Offline Capability
+-   Implemented LocalStorage service for data persistence
+-   Created sync queue system for offline operations
+-   Built ProductEntryService with offline/online logic
+-   Added connection monitoring with reconnection detection
 
--   [ ] Implement LocalStorage for offline data
--   [ ] Add online/offline detection
--   [ ] Build sync mechanism
--   [ ] Add sync status indicators
+### ✅ Phase 4: Smart Synchronization
 
-### 📊 Phase 5: Server Dashboard
+-   Implemented automatic sync on reconnection (offline → online)
+-   Added conflict resolution (negative IDs → real IDs)
+-   Created sync queue management
+-   Built status indicators (connection, queue, sync)
 
--   [ ] Create data viewing page
--   [ ] Display all collected entries
--   [ ] Add filtering/search functionality
+### ✳️ Phase 5: Polish User Experience (In Progress)
 
-### 🎨 Phase 6: Polish & Last Touches
-
--   [ ] UI improvements
--   [ ] Mobile responsiveness
--   [ ] Documentation
+-   Adding real-time status indicators in navbar
+-   Implementing visual feedback for all operations
+-   Styling components with modern CSS
+-   Ensuring no errors shown to users when offline
 
 ## 🔧 Configuration
 
-### Connection Strings
-
-**Development (LocalDB):**
+### Connection String (appsettings.json)
 
 ```json
-"Server=(localdb)\\mssqllocaldb;Database=DataCollectorDB;Trusted_Connection=True;TrustServerCertificate=True;"
+{
+	"ConnectionStrings": {
+		"DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=SyncFlowDb;Trusted_Connection=true;MultipleActiveResultSets=true"
+	}
+}
 ```
 
-**Production (Docker):**
+### API Base URL (Client)
 
-```json
-"Server=localhost,1433;Database=DataCollectorDB;User Id=sa;Password=placeholder;TrustServerCertificate=True;"
+Update in service classes if your server runs on a different port:
+
+```csharp
+private const string ApiUrl = "http://localhost:5188/api/productentries";
 ```
-
-> ⚠️ **Note**: The production password is a placeholder for security reasons.
->
-> To run locally with Docker:
->
-> 1. Update `docker-compose.yml` with your own password
-> 2. Update `appsettings.json` connection string to match
->
-> In production environments, use:
->
-> -   Azure Key Vault
-> -   AWS Secrets Manager
-> -   Environment variables
-> -   .NET User Secrets (for local dev)
-
-### Port Configuration
-
-Configured in `Server/Properties/launchSettings.json`:
-
--   **Development**: HTTPS 5000, HTTP 5001
--   **Production-Local**: HTTPS 6000, HTTP 6001
 
 ## 🤝 Contributing
 
-This is a portfolio/interview project. Feel free to fork and experiment!
+This is a portfolio/interview project demonstrating offline-first architecture. Feel free to fork and experiment!
 
 ## 📄 License
 
 Licensed under GNU AGPL v3.0 - see [LICENSE](LICENSE) for details.
-
-**What this means:**
-
--   ✅ Free to use for personal and educational purposes
--   ✅ Modifications must be open-sourced
--   ✅ Network use triggers license obligations
--   💼 Commercial licensing available - contact me for inquiries
 
 ## 👤 Author
 
@@ -241,12 +192,20 @@ Licensed under GNU AGPL v3.0 - see [LICENSE](LICENSE) for details.
 
 Built as part of a technical interview assessment demonstrating:
 
--   Full-stack Blazor development
--   Offline-first architecture
--   Database design and migrations
--   Docker containerization
--   Clean code practices
+-   Offline-first web application architecture
+-   Blazor WebAssembly development
+-   ASP.NET Core Web API design
+-   Entity Framework Core and database migrations
+-   Browser storage and synchronization patterns
+-   Event-driven architecture
+-   Clean code and separation of concerns
 
 ---
 
-**Status**: 🟢 Phase 1 Complete - Database layer fully configured and tested
+**Status**:
+
+-   ✅ Phase 1 - Project Setup & Database (Complete)
+-   ✅ Phase 2 - Client UI (Complete)
+-   ✅ Phase 3 - Offline-First Architecture (Complete)
+-   ✅ Phase 4 - Smart Synchronization (Complete)
+-   ✳️ Phase 5 - Polish User Experience (In Progress)

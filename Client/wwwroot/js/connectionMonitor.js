@@ -2,23 +2,23 @@ let dotNetHelper = null;
 let pingInterval = null;
 
 export function initializeConnectionMonitor(dotNetReference) {
+    console.log("Connection monitor initialized");
     dotNetHelper = dotNetReference;
     
     // Check immediately
     checkInternetConnection();
     
-    // Check status every 10 seconds
-    pingInterval = setInterval(checkInternetConnection, 10000);
+    // Check status every 5 seconds
+    pingInterval = setInterval(checkInternetConnection, 5000);
 }
 
 async function checkInternetConnection() {
     try {
-        // Ping Google's favicon (very small, fast, reliable)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
         
         const response = await fetch('https://www.google.com/favicon.ico', {
-            mode: 'no-cors', // Important: allows cross-origin without CORS issues
+            mode: 'no-cors',
             cache: 'no-cache',
             signal: controller.signal
         });
@@ -26,13 +26,17 @@ async function checkInternetConnection() {
         clearTimeout(timeoutId);
         updateConnectionStatus(true);
     } catch (error) {
+        console.log("Offline detected:", error.message);
         updateConnectionStatus(false);
     }
 }
 
 function updateConnectionStatus(isOnline) {
     if (dotNetHelper) {
-        dotNetHelper.invokeMethodAsync('UpdateConnectionStatus', isOnline);
+        dotNetHelper.invokeMethodAsync('UpdateConnectionStatus', isOnline)
+            .catch(err => console.error("Error calling UpdateConnectionStatus:", err));
+    } else {
+        console.error("dotNetHelper is null");
     }
 }
 

@@ -13,9 +13,13 @@
 @using Client.Layout
 @using Client.Components
 @using Client.Models
+@using Client.Services
 
 @using Markdig
 
 @inject HttpClient Http
+@inject IJSRuntime JS
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
+@inject ConnectionStatusService ConnectionStatus
+@inject ProductEntryService ProductService
