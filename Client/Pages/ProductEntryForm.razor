@@ -1,7 +1,107 @@
 @page "/form"
 
-<PageTitle>Product Entry Form</PageTitle>
+<PageTitle>Add Product Entry</PageTitle>
 
-<div class="section-container">
-    <h1>Product Entry Form</h1>
+<div class="form-container">
+    <h2>Add Product Entry</h2>
+
+    <EditForm Model="@entry" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="userName">User Name:</label>
+            <InputText id="userName" @bind-Value="entry.UserName" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="productModel">Product Model:</label>
+            <InputText id="productModel" @bind-Value="entry.ProductModel" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="partNumber">Part Number:</label>
+            <InputText id="partNumber" @bind-Value="entry.PartNumber" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <InputNumber id="quantity" @bind-Value="entry.Quantity" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <InputNumber id="price" @bind-Value="entry.Price" class="form-control" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span>Submitting...</span>
+                }
+                else
+                {
+                    <span>Submit</span>
+                }
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="ResetForm">Reset</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert @(isError ? "alert-error" : "alert-success")">
+                @message
+            </div>
+        }
+    </EditForm>
 </div>
+
+@code {
+    private ProductEntryDto entry = new();
+    private bool isSubmitting = false;
+    private string message = "";
+    private bool isError = false;
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        message = "";
+        isError = false;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("http://localhost:5188/api/productentries", entry);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Entry added successfully!";
+                isError = false;
+                ResetForm();
+
+                // Optional: Navigate to view page after 2 seconds
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/view");
+            }
+            else
+            {
+                message = $"Error: {response.StatusCode}";
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+            isError = true;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        entry = new ProductEntryDto();
+    }
+}
